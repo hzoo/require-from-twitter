@@ -13,7 +13,6 @@ const res3 = leftPad(12345, 5);
 assert(res3 === '12345');
 
 // test async
-
 // some sort
 requireFromTwitter.async('713782217646931968')
 .then((sort) => {
@@ -22,3 +21,7 @@ requireFromTwitter.async('713782217646931968')
   [1,2].forEach((elem, i) => assert(elem === sortArr[i]));
   console.log('All passed! 🎉');
 });
+
+// test alias
+const leftPad2 = requireFromTwitter('left-pad');
+assert(leftPad2(1, 5) === '00001');

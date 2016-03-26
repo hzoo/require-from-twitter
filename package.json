@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "require(), but from a tweet",
   "main": "index.js",
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "dependencies": {
     "babel-standalone": "6.7.4",
     "entities": "1.1.1"
@@ -23,5 +25,9 @@
   },
   "lppm": {
     "modulesLocation": "tweet_modules"
+  },
+  "lppmDependencies": {
+    "left-pad": "712799807073419264",
+    "sort": "713782217646931968"
   }
 }

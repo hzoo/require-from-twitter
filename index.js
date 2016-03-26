@@ -75,7 +75,9 @@ function getModule(id, source) {
 }
 
 function requireFromTwitter(id) {
-  const tweet = getModule(id, 'twitter');
+  let name = pkg.lppmDependencies && pkg.lppmDependencies[id] || id;
+
+  const tweet = getModule(name, 'twitter');
   return returnCode(JSON.parse(tweet).text);
 }
 
