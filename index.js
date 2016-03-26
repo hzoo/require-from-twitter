@@ -1,14 +1,33 @@
 "use strict";
 
 const fs = require("fs");
-const babelrc = require("./package").babel;
-const Babel = require("babel-standalone");
+const path = require("path");
+const child = require("child_process");
 const decode = require("entities").decodeHTML;
-const Twit = require("twit");
+const Babel = require("babel-standalone");
+const babelrc = require("./package").babel;
 
-// edit twitter-config.json first
-const twit = new Twit(require("./twitter-config"));
-const tpmFolder = "tweet_modules";
+function execSync(cmd) {
+  return child.execSync(cmd, {
+    encoding: "utf8"
+  }).trim();
+};
+
+function getTopLevelDirectory() {
+  return execSync("git rev-parse --show-toplevel");
+};
+
+const rootPath = getTopLevelDirectory();
+const packageLoc = path.join(rootPath, "package.json");
+const pkg = require(packageLoc);
+
+const lppmrc = pkg.lppm;
+const lppmModulesName = lppmrc && lppmrc.modulesLocation || "tweet_modules";
+const lppmFolder = path.join(rootPath, lppmModulesName);
+
+function modulesPath(moduleName) {
+  return `${lppmFolder}/${moduleName}.js`;
+}
 
 /*
   Check for
@@ -19,21 +38,20 @@ const tpmFolder = "tweet_modules";
 function hasExportsUsage(node) {
   return node.type === "ExpressionStatement" &&
   node.expression.type === "CallExpression" &&
-  node.expression.callee === "MemberExpression" &&
-  node.expression.callee.object === "Identifier" &&
+  node.expression.callee.type === "MemberExpression" &&
+  node.expression.callee.object.type === "Identifier" &&
   node.expression.callee.object.name === "Object" &&
-  node.expression.callee.object.property.type === "Identifier" &&
-  node.expression.callee.object.property.name === "defineProperty" &&
+  node.expression.callee.property.type === "Identifier" &&
+  node.expression.callee.property.name === "defineProperty" &&
   node.expression.arguments.length === 3 &&
-  node.expression.arguements[1].value === "__esModule"
+  node.expression.arguments[1].value === "__esModule"
 }
 
 function returnCode(text) {
   const exports = {};
   const res = Babel.transform(decode(text), babelrc);
-  debugger;
 
-  if (hasExportsUsage(ast.ast.program.body[0])) {
+  if (hasExportsUsage(res.ast.program.body[0])) {
     eval(res.code);
     return exports.default;
   } else {
@@ -41,58 +59,46 @@ function returnCode(text) {
   }
 }
 
-function install(id, data) {
-  fs.stat(tpmFolder, (e) => {
-    if (e && e.code === "ENOENT") {
-      fs.mkdirSync(tpmFolder);
+function getModule(id, source) {
+  let module;
+  try {
+    module = fs.readFileSync(modulesPath(`${source}:${id}`), "utf8");
+  } catch (e) {
+    if (e.code !== "ENOENT") {
+      throw new Error(e);
     }
 
-    fs.writeFile(tpmPath(id), data, "utf8", (err) => {
-      if (err) {
-        console.error(`Unable to create file at ${tpmPath(id)}`);
-        throw err;
+    throw new Error(`${id} not found. Did you 'lppm install ${id}'?`);
+  }
+
+  return module;
+}
+
+function requireFromTwitter(id) {
+  const tweet = getModule(id, 'twitter');
+  return returnCode(JSON.parse(tweet).text);
+}
+
+// fun
+requireFromTwitter.async = function(id) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(modulesPath(`twitter:${id}`), "utf8", (e, tweet) => {
+      if (e) {
+        try {
+          execSync(`lppm i ${id}`);
+        } catch (e) {
+          console.log();
+          console.log(`${id} not found. You can use lppm to install.`);
+          console.log(`npm install lppm -g`);
+          console.log(`lppm install ${id}`);
+          return reject();
+        }
+        return resolve(requireFromTwitter(id));
       }
+
+      return resolve(returnCode(JSON.parse(tweet).text));
     });
   });
 }
 
-function tpmPath(id) {
-  return `${tpmFolder}/${id}.js`;
-}
-
-function getTweet(id) {
-  return twit.get(`/statuses/show/:id`, { id })
-  .then((tweet) => {
-    if (tweet.errors) throw new Error(`Cannot find module "${id}"`);
-    const data = tweet.data;
-
-    install(id, JSON.stringify(data, [
-      "created_at",
-      "text",
-      "user",
-      "screen_name"
-    ], 4));
-
-    console.log(`Tweet ${id}: ${data.retweet_count} Retweets`);
-    console.log(`@${data.user.screen_name} at ${data.created_at}`);
-    console.log("===");
-    console.log(data.text);
-    console.log("---");
-
-    return returnCode(data.text);
-  });
-}
-
-module.exports = function requireFromTwitter(id) {
-  debugger;
-  let tweet;
-  try {
-    tweet = fs.readFileSync(tpmPath(id), "utf8");
-  } catch (e) {
-    if (e.code !== "ENOENT") Promise.reject(e);
-
-    return Promise.resolve(getTweet(id));
-  }
-
-  return Promise.resolve(returnCode(JSON.parse(tweet).text));
-}
+module.exports = requireFromTwitter;

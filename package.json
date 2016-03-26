@@ -2,12 +2,10 @@
   "name": "require-from-twitter",
   "version": "0.0.1",
   "description": "require(), but from a tweet",
-  "files": [
-    "index.js"
-  ],
+  "main": "index.js",
+  "files": ["index.js"],
   "dependencies": {
     "babel-standalone": "6.7.4",
-    "twit": "2.2.3",
     "entities": "1.1.1"
   },
   "babel": {
@@ -22,5 +20,8 @@
   },
   "scripts": {
     "test": "node test"
+  },
+  "lppm": {
+    "modulesLocation": "tweet_modules"
   }
 }
