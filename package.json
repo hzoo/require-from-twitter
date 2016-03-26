@@ -1,0 +1,26 @@
+{
+  "name": "require-from-twitter",
+  "version": "0.0.1",
+  "description": "require(), but from a tweet",
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "babel-standalone": "6.7.4",
+    "twit": "2.2.3",
+    "entities": "1.1.1"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "react",
+      "stage-0"
+    ],
+    "plugins": [
+      "transform-runtime"
+    ]
+  },
+  "scripts": {
+    "test": "node test"
+  }
+}
