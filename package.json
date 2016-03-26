@@ -23,10 +23,10 @@
   "scripts": {
     "test": "node test"
   },
-  "lppm": {
+  "twpm": {
     "modulesLocation": "tweet_modules"
   },
-  "lppmDependencies": {
+  "twpmDependencies": {
     "left-pad": "712799807073419264",
     "sort": "713782217646931968"
   }

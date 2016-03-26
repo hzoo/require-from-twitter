@@ -21,12 +21,12 @@ const rootPath = getTopLevelDirectory();
 const packageLoc = path.join(rootPath, "package.json");
 const pkg = require(packageLoc);
 
-const lppmrc = pkg.lppm;
-const lppmModulesName = lppmrc && lppmrc.modulesLocation || "tweet_modules";
-const lppmFolder = path.join(rootPath, lppmModulesName);
+const twpmrc = pkg.twpm;
+const twpmModulesName = twpmrc && twpmrc.modulesLocation || "tweet_modules";
+const twpmFolder = path.join(rootPath, twpmModulesName);
 
 function modulesPath(moduleName) {
-  return `${lppmFolder}/${moduleName}.js`;
+  return `${twpmFolder}/${moduleName}.js`;
 }
 
 /*
@@ -68,14 +68,14 @@ function getModule(id, source) {
       throw new Error(e);
     }
 
-    throw new Error(`${id} not found. Did you 'lppm install ${id}'?`);
+    throw new Error(`${id} not found. Did you 'twpm install ${id}'?`);
   }
 
   return module;
 }
 
 function requireFromTwitter(id) {
-  let name = pkg.lppmDependencies && pkg.lppmDependencies[id] || id;
+  let name = pkg.twpmDependencies && pkg.twpmDependencies[id] || id;
 
   const tweet = getModule(name, 'twitter');
   return returnCode(JSON.parse(tweet).text);
@@ -87,12 +87,12 @@ requireFromTwitter.async = function(id) {
     fs.readFile(modulesPath(`twitter:${id}`), "utf8", (e, tweet) => {
       if (e) {
         try {
-          execSync(`lppm i ${id}`);
+          execSync(`twpm i ${id}`);
         } catch (e) {
           console.log();
-          console.log(`${id} not found. You can use lppm to install.`);
-          console.log(`npm install lppm -g`);
-          console.log(`lppm install ${id}`);
+          console.log(`${id} not found. You can use twpm to install.`);
+          console.log(`npm install twpm -g`);
+          console.log(`twpm install ${id}`);
           return reject();
         }
         return resolve(requireFromTwitter(id));

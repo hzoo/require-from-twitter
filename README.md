@@ -49,18 +49,18 @@ async function test() {
 
 Default folder: `tweet_modules`
 
-Override with `lppm` key in `package.json`:
+Override with `twpm` key in `package.json`:
 ```js
 {
     "name": "package1",
     "dependencies": {},
-    "lppm": {
-        "modulesLocation": "lppm_modules"
+    "twpm": {
+        "modulesLocation": "twpm_modules"
     }
 }
 
 
 ## Tests
 
-`npm i lppm -g`
+`npm i twpm -g`
 `npm t`
